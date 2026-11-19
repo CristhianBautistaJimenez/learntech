@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agendar | LearnTech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="menu.js" defer></script></head>
+<body>
+<header>
+  <a href="index.html" class="logo" aria-label="LearnTech, inicio">Learn<span>Tech</span></a>
+  <button type="button" class="menu-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu"><span class="barras"></span></button>
+  <div class="menu" id="menu">
+    <nav aria-label="Principal"><a href="index.html">Inicio</a><a href="servicios.html">Servicios</a><a href="multimedia.html">Multimedia</a><a href="index.html#nosotros">Nosotros</a></nav>
+    <a href="agendar.html" class="btn">Inicia tu proyecto</a>
+  </div>
+</header>
+<main class="agendar">
+<img class="foto" src="img/agendar.jpg" alt="Mujer con sombrero en un campo de lavanda">
+<section><h1>Comienza tu proyecto ahora</h1><p class="sub">Reserva una llamada estratégica; conoceremos tu negocio y tus objetivos.</p>
+<div class="agendar-grid">
+<form id="form" novalidate>
+<label for="nombre">Nombre: *</label><input id="nombre" required autocomplete="given-name">
+<label for="apellido">Apellido: *</label><input id="apellido" required autocomplete="family-name">
+<label for="tel">Teléfono: *</label><div class="tel"><div class="pais"><button type="button" id="paisBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Código de país"><img id="paisFlag" src="https://flagcdn.com/w40/mx.png" alt="" width="24" height="18"></button><ul id="paisLista" role="listbox" aria-label="Países" hidden></ul></div><span class="lada" id="paisCod">+52</span><input id="tel" type="tel" required autocomplete="tel-national" inputmode="tel"></div>
+<label for="correo">Correo Electrónico: *</label><input id="correo" type="email" required autocomplete="email">
+<label for="cia">Compañía: *</label><input id="cia" required autocomplete="organization">
+<label for="web">Website:</label><input id="web" type="url" autocomplete="url">
+<fieldset><legend>¿Qué servicio te interesa? *</legend>
+<label class="op"><input type="radio" name="serv" required> Cursos de IA</label>
+<label class="op"><input type="radio" name="serv"> Desarrollo de dashboard</label>
+<label class="op"><input type="radio" name="serv"> Implementación de solución IA</label>
+<label class="op"><input type="radio" name="serv"> Capacitación</label></fieldset>
+<input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
+<button class="btn-agendar" type="submit">Agendar</button><p id="msg" role="status"></p>
+</form>
+<div class="cal"><div class="cal-top"><strong id="mes"></strong><span><button type="button" id="prev" aria-label="Mes anterior">‹</button><button type="button" id="next" aria-label="Mes siguiente">›</button></span></div>
+<div class="dias" id="dias"></div>
+<label for="hora" class="hl">Selecciona un horario:</label><select id="hora"></select></div>
+</div></section></main>
+<script>
+const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const hoy=new Date();hoy.setHours(0,0,0,0);
+let vista=new Date(hoy.getFullYear(),hoy.getMonth(),1),sel=null;
+const $=id=>document.getElementById(id);
+function dibuja(){
+  $("mes").innerHTML=`${MESES[vista.getMonth()]} <span>${vista.getFullYear()}</span>`;
+  let h=["DOM","LUN","MAR","MIE","JUE","VIE","SAB"].map(d=>`<b>${d}</b>`).join("");
+  h+='<i></i>'.repeat(vista.getDay());
+  const n=new Date(vista.getFullYear(),vista.getMonth()+1,0).getDate();
+  for(let d=1;d<=n;d++){
+    const f=new Date(vista.getFullYear(),vista.getMonth(),d),w=f.getDay();
+    const ok=f>=hoy&&w>0&&w<6,c=[ok?"ok":"",sel&&+sel==+f?"sel":"",+f==+hoy?"hoy":""].join(" ");
+    h+=`<button type="button" class="${c}" ${ok?"":"disabled"} data-d="${d}">${d}</button>`;
+  }
+  $("dias").innerHTML=h;
+}
+$("dias").onclick=e=>{const b=e.target.closest("button[data-d]");if(!b)return;sel=new Date(vista.getFullYear(),vista.getMonth(),+b.dataset.d);dibuja();};
+$("prev").onclick=()=>{vista.setMonth(vista.getMonth()-1);dibuja();};
+$("next").onclick=()=>{vista.setMonth(vista.getMonth()+1);dibuja();};
+for(let m=9*60;m<=18*60;m+=15){const t=`${String(m/60|0).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;$("hora").add(new Option(t,t));}
+// ===== Envío del formulario por correo (Web3Forms) =====
+// 1) Entra a https://web3forms.com, escribe tu correo y recibirás tu Access Key.
+// 2) Pégala aquí abajo. (Es seguro que sea pública: solo envía a tu correo.)
+const WEB3FORMS_KEY="e69849ae-fe2d-4c8a-96f4-f71ccecf0680";
+$("form").onsubmit=async e=>{
+  e.preventDefault();
+  const f=$("form"),m=$("msg"),b=f.querySelector(".btn-agendar");
+  const error=t=>{m.className="error";m.textContent=t;};
+  m.className="";
+  if(!f.checkValidity()){f.reportValidity();return;}
+  if(!sel){error("Selecciona una fecha en el calendario.");return;}
+  if(WEB3FORMS_KEY==="TU_ACCESS_KEY"){error("Falta configurar la clave de Web3Forms en agendar.html.");return;}
+  const fecha=sel.toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"});
+  const servicio=f.querySelector("input[name=serv]:checked").parentElement.textContent.trim();
+  const datos={
+    access_key:WEB3FORMS_KEY,
+    subject:`Nueva solicitud de asesoría: ${$("nombre").value} ${$("apellido").value}`,
+    from_name:"Sitio web LearnTech",
+    name:`${$("nombre").value} ${$("apellido").value}`,
+    email:$("correo").value,
+    telefono:`${$("paisCod").textContent} ${$("tel").value}`,
+    compania:$("cia").value,
+    website:$("web").value||"No indicó",
+    servicio:servicio,
+    fecha_llamada:fecha,
+    hora_llamada:$("hora").value,
+    botcheck:$("botcheck").checked
+  };
+  b.disabled=true;m.textContent="Enviando...";
+  try{
+    const r=await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(datos)});
+    const j=await r.json();
+    if(!r.ok||!j.success)throw new Error(j.message||"Error al enviar");
+    m.textContent=`¡Gracias, ${$("nombre").value}! Tu llamada quedó para el ${fecha} a las ${$("hora").value}. Te contactaremos pronto.`;
+    f.reset();sel=null;dibuja();
+  }catch(err){
+    error("No pudimos enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.");
+  }finally{b.disabled=false;}
+};
+const PAISES=[["mx","México","+52"],["us","Estados Unidos","+1"],["ca","Canadá","+1"],["es","España","+34"],["ar","Argentina","+54"],["bo","Bolivia","+591"],["br","Brasil","+55"],["cl","Chile","+56"],["co","Colombia","+57"],["cr","Costa Rica","+506"],["cu","Cuba","+53"],["ec","Ecuador","+593"],["sv","El Salvador","+503"],["gt","Guatemala","+502"],["hn","Honduras","+504"],["ni","Nicaragua","+505"],["pa","Panamá","+507"],["py","Paraguay","+595"],["pe","Perú","+51"],["do","Rep. Dominicana","+1"],["uy","Uruguay","+598"],["ve","Venezuela","+58"],["fr","Francia","+33"],["de","Alemania","+49"],["it","Italia","+39"],["pt","Portugal","+351"],["gb","Reino Unido","+44"],["cn","China","+86"],["jp","Japón","+81"],["in","India","+91"]];
+const lista=$("paisLista"),pBtn=$("paisBtn");
+lista.innerHTML=PAISES.map((p,i)=>`<li role="option" tabindex="-1" data-i="${i}" aria-selected="${i==0}"><img src="https://flagcdn.com/w40/${p[0]}.png" alt="" width="24" height="18" loading="lazy"><span>${p[1]}</span><b>${p[2]}</b></li>`).join("");
+function abre(v){lista.hidden=!v;pBtn.setAttribute("aria-expanded",v);if(v)(lista.querySelector('[aria-selected="true"]')||lista.firstChild).focus();}
+function elige(li){const p=PAISES[li.dataset.i];$("paisFlag").src=`https://flagcdn.com/w40/${p[0]}.png`;$("paisCod").textContent=p[2];
+  lista.querySelectorAll("li").forEach(x=>x.setAttribute("aria-selected",x==li));abre(false);pBtn.focus();}
+pBtn.onclick=()=>abre(lista.hidden);
+lista.onclick=e=>{const li=e.target.closest("li");if(li)elige(li);};
+lista.onkeydown=e=>{const li=document.activeElement;
+  if(e.key=="ArrowDown"){e.preventDefault();(li.nextElementSibling||li).focus();}
+  else if(e.key=="ArrowUp"){e.preventDefault();(li.previousElementSibling||li).focus();}
+  else if(e.key=="Enter"||e.key==" "){e.preventDefault();elige(li);}
+  else if(e.key=="Escape"){abre(false);pBtn.focus();}};
+document.addEventListener("click",e=>{if(!e.target.closest(".pais"))abre(false);});
+dibuja();
+</script>
+<footer id="contacto">
+  <div><p class="logo">LearnTech</p><p class="tagline">Impulsando el futuro corporativo con Inteligencia Artificial</p></div>
+  <div class="pie">
+    <address><p>Correo electrónico: <a href="mailto:contacto@learntech.com">contacto@learntech.com</a></p><p>Teléfono: +52 (442) 789 5706</p><p>Querétaro, México</p></address>
+    <ul><li><a href="servicios.html">Servicios</a></li><li><a href="multimedia.html">Multimedia</a></li><li><a href="index.html#casos">Casos de Éxito</a></li><li><a href="index.html#nosotros">Sobre Nosotros</a></li><li><a href="agendar.html">Contacto</a></li></ul>
+  </div>
+</footer>
+</body></html>  
